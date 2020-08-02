@@ -1,0 +1,34 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "SwiftImageService",
+        "repositoryURL": "https://github.com/devQQ/SwiftImageService",
+        "state": {
+          "branch": null,
+          "revision": "209201f77b1b7dbd01ce057226c228fed440fe7b",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "package": "SwiftUIStyleKit",
+        "repositoryURL": "https://github.com/devQQ/SwiftUIStyleKit",
+        "state": {
+          "branch": null,
+          "revision": "ead12971453c28e67e72a467349fa5e101e9dc43",
+          "version": "1.2.1"
+        }
+      },
+      {
+        "package": "SwiftUIToolbox",
+        "repositoryURL": "https://github.com/devQQ/SwiftUIToolbox",
+        "state": {
+          "branch": null,
+          "revision": "5fbe4a1550e6e59509b3b752f1e41896d5cdabeb",
+          "version": "1.4.1"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
