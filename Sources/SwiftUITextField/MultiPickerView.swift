@@ -15,6 +15,11 @@ public struct MultiPickerView: View {
     public let components: [Component]
     @Binding public var selection: [Index]
     
+    public init(components: [Component], selection: Binding<[Index]>) {
+        self.components = components
+        self._selection = selection
+    }
+    
     public var body: some View {
         GeometryReader { proxy in
             HStack(spacing: 0) {
