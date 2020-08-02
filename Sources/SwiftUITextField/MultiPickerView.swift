@@ -8,12 +8,12 @@
 import SwiftUI
 
 public struct MultiPickerView: View {
-    typealias Index = Int
-    typealias Value = String
-    typealias Component = [Value]
+    public typealias Index = Int
+    public typealias Value = String
+    public typealias Component = [Value]
     
-    let components: [Component]
-    @Binding var selection: [Index]
+    public let components: [Component]
+    @Binding public var selection: [Index]
     
     public var body: some View {
         GeometryReader { proxy in
