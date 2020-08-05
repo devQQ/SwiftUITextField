@@ -17,12 +17,15 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
         
         @Binding var isFirstResponder: Bool
         
-        public init(_ parent: SwiftUITextField, onEditingChanged: @escaping (Bool) -> Void = { _ in }, onCommit: @escaping (String) -> Void = {_ in }, isInputViewActive: Bool, isFirstResponder: Binding<Bool>) {
+        let formatText: ((String) -> String)?
+        
+        public init(_ parent: SwiftUITextField, onEditingChanged: @escaping (Bool) -> Void = { _ in }, onCommit: @escaping (String) -> Void = {_ in }, isInputViewActive: Bool, isFirstResponder: Binding<Bool>, formatText: ((String) -> String)? = nil) {
             self.parent = parent
             self.onEditingChanged = onEditingChanged
             self.onCommit = onCommit
             self.isInputViewActive = isInputViewActive
             self._isFirstResponder = isFirstResponder
+            self.formatText = formatText
         }
         
         public func textFieldDidBeginEditing(_ textField: UITextField) {
@@ -37,8 +40,20 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
             }
             
             if let newText = (textField.text as NSString?)?.replacingCharacters(in: range, with: string),
-                newText.count <= parent.characterLimit {
-                self.parent.text = newText
+                (newText.count <= parent.characterLimit ||
+                    formatText != nil) {
+                if let formatText = formatText {
+                    let formattedText = formatText(newText)
+                    
+                    guard formattedText.count <= parent.characterLimit else {
+                        return false
+                    }
+                    
+                    self.parent.text = formattedText
+                } else {
+                    self.parent.text = newText
+                }
+
                 return true
             } else {
                 return false
@@ -78,6 +93,8 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
     @Binding public var shouldBecomeFirstResponder: Bool
     @Binding public var shouldResignFirstResponder: Bool
     
+    let formatText: ((String) -> String)?
+    
     public init(_ placeholder: String,
                 text: Binding<String>,
                 characterLimit: Int,
@@ -86,7 +103,8 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
                 inputAccessoryView: ( () -> V)? = nil,
                 keyboardType: UIKeyboardType = .default,
                 returnKeyType: UIReturnKeyType = .default, autocapitalizationType: UITextAutocapitalizationType = .words, isSecureTextEntry: Bool = false,
-                cacheText: Binding<String>, isFirstResponder: Binding<Bool>, shouldBecomeFirstResponder: Binding<Bool>, shouldResignFirstResponder: Binding<Bool>) {
+                cacheText: Binding<String>, isFirstResponder: Binding<Bool>, shouldBecomeFirstResponder: Binding<Bool>, shouldResignFirstResponder: Binding<Bool>,
+                formatText: ((String) -> String)? = nil) {
         self.placeholder = placeholder
         self._text = text
         self.characterLimit = characterLimit
@@ -102,6 +120,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
         self._isFirstResponder = isFirstResponder
         self._shouldBecomeFirstResponder = shouldBecomeFirstResponder
         self._shouldResignFirstResponder = shouldResignFirstResponder
+        self.formatText = formatText
     }
     
     public func makeUIView(context: Context) -> UITextField {
@@ -176,7 +195,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
     }
     
     public func makeCoordinator() -> Coordinator {
-        Coordinator(self, onEditingChanged: onEditingChanged, onCommit: onCommit, isInputViewActive: self.inputView != nil, isFirstResponder: self.$isFirstResponder)
+        Coordinator(self, onEditingChanged: onEditingChanged, onCommit: onCommit, isInputViewActive: self.inputView != nil, isFirstResponder: self.$isFirstResponder, formatText: formatText)
     }
 }
 
