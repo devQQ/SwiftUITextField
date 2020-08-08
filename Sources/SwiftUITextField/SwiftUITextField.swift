@@ -18,14 +18,22 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
         @Binding var isFirstResponder: Bool
         
         let formatText: ((String) -> String)?
+        let returnKeyAction: (() -> Void)?
         
-        public init(_ parent: SwiftUITextField, onEditingChanged: @escaping (Bool) -> Void = { _ in }, onCommit: @escaping (String) -> Void = {_ in }, isInputViewActive: Bool, isFirstResponder: Binding<Bool>, formatText: ((String) -> String)? = nil) {
+        public init(_ parent: SwiftUITextField,
+                    onEditingChanged: @escaping (Bool) -> Void = { _ in },
+                    onCommit: @escaping (String) -> Void = {_ in },
+                    isInputViewActive: Bool,
+                    isFirstResponder: Binding<Bool>,
+                    formatText: ((String) -> String)? = nil,
+                    returnKeyAction:  (() -> Void)? = nil) {
             self.parent = parent
             self.onEditingChanged = onEditingChanged
             self.onCommit = onCommit
             self.isInputViewActive = isInputViewActive
             self._isFirstResponder = isFirstResponder
             self.formatText = formatText
+            self.returnKeyAction = returnKeyAction
         }
         
         public func textFieldDidBeginEditing(_ textField: UITextField) {
@@ -34,14 +42,22 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
         }
         
         public func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-            //check if innput is active and prevent changes in text
+            //check if input is active and prevent changes in text
             guard !isInputViewActive else {
                 return false
             }
             
-            if let newText = (textField.text as NSString?)?.replacingCharacters(in: range, with: string),
-                (newText.count <= parent.characterLimit ||
-                    formatText != nil) {
+            //Check for return key
+            guard string != "\n" else {
+                self.returnKeyAction?()
+                return false
+            }
+            
+            if let newText = (textField.text as NSString?)?.replacingCharacters(in: range, with: string) {
+                guard newText.count <= parent.characterLimit || formatText != nil else {
+                    return false
+                }
+                
                 if let formatText = formatText {
                     let formattedText = formatText(newText)
                     
@@ -53,7 +69,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
                 } else {
                     self.parent.text = newText
                 }
-
+                
                 return true
             } else {
                 return false
@@ -94,6 +110,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
     @Binding public var shouldResignFirstResponder: Bool
     
     let formatText: ((String) -> String)?
+    let returnKeyAction: (() -> Void)?
     
     public init(_ placeholder: String,
                 text: Binding<String>,
@@ -104,7 +121,9 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
                 keyboardType: UIKeyboardType = .default,
                 returnKeyType: UIReturnKeyType = .default, autocapitalizationType: UITextAutocapitalizationType = .words, isSecureTextEntry: Bool = false,
                 cacheText: Binding<String>, isFirstResponder: Binding<Bool>, shouldBecomeFirstResponder: Binding<Bool>, shouldResignFirstResponder: Binding<Bool>,
-                formatText: ((String) -> String)? = nil) {
+                formatText: ((String) -> String)? = nil,
+                returnKeyAction: (() -> Void)? = nil
+    ) {
         self.placeholder = placeholder
         self._text = text
         self.characterLimit = characterLimit
@@ -121,6 +140,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
         self._shouldBecomeFirstResponder = shouldBecomeFirstResponder
         self._shouldResignFirstResponder = shouldResignFirstResponder
         self.formatText = formatText
+        self.returnKeyAction = returnKeyAction
     }
     
     public func makeUIView(context: Context) -> UITextField {
@@ -195,7 +215,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
     }
     
     public func makeCoordinator() -> Coordinator {
-        Coordinator(self, onEditingChanged: onEditingChanged, onCommit: onCommit, isInputViewActive: self.inputView != nil, isFirstResponder: self.$isFirstResponder, formatText: formatText)
+        Coordinator(self, onEditingChanged: onEditingChanged, onCommit: onCommit, isInputViewActive: self.inputView != nil, isFirstResponder: self.$isFirstResponder, formatText: formatText, returnKeyAction: returnKeyAction)
     }
 }
 
