@@ -94,6 +94,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
     
     public let placeholder: String
     @Binding public var text: String
+    @Binding public var textColor: UIColor
     public let characterLimit: Int
     public let onEditingChanged: (Bool) -> Void
     public let onCommit: () -> Void
@@ -103,8 +104,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
     public let returnKeyType: UIReturnKeyType
     public let autocapitalizationType: UITextAutocapitalizationType
     public let isSecureTextEntry: Bool
-    
-    @Binding public var cacheText: String
+
     @Binding public var isFirstResponder: Bool
     @Binding public var shouldBecomeFirstResponder: Bool
     @Binding public var shouldResignFirstResponder: Bool
@@ -114,18 +114,25 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
     
     public init(_ placeholder: String,
                 text: Binding<String>,
+                textColor: Binding<UIColor>,
                 characterLimit: Int,
-                onEditingChanged: @escaping (Bool) -> Void = { _ in }, onCommit: @escaping () -> Void = {},
+                onEditingChanged: @escaping (Bool) -> Void = { _ in },
+                onCommit: @escaping () -> Void = {},
                 inputView: ( () -> U)? = nil,
                 inputAccessoryView: ( () -> V)? = nil,
                 keyboardType: UIKeyboardType = .default,
-                returnKeyType: UIReturnKeyType = .default, autocapitalizationType: UITextAutocapitalizationType = .words, isSecureTextEntry: Bool = false,
-                cacheText: Binding<String>, isFirstResponder: Binding<Bool>, shouldBecomeFirstResponder: Binding<Bool>, shouldResignFirstResponder: Binding<Bool>,
+                returnKeyType: UIReturnKeyType = .default,
+                autocapitalizationType: UITextAutocapitalizationType = .words,
+                isSecureTextEntry: Bool = false,
+                isFirstResponder: Binding<Bool>,
+                shouldBecomeFirstResponder: Binding<Bool>,
+                shouldResignFirstResponder: Binding<Bool>,
                 formatText: ((String) -> String)? = nil,
                 returnKeyAction: (() -> Void)? = nil
     ) {
         self.placeholder = placeholder
         self._text = text
+        self._textColor = textColor
         self.characterLimit = characterLimit
         self.onEditingChanged = onEditingChanged
         self.onCommit = onCommit
@@ -135,7 +142,6 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
         self.returnKeyType = returnKeyType
         self.autocapitalizationType = autocapitalizationType
         self.isSecureTextEntry = isSecureTextEntry
-        self._cacheText = cacheText
         self._isFirstResponder = isFirstResponder
         self._shouldBecomeFirstResponder = shouldBecomeFirstResponder
         self._shouldResignFirstResponder = shouldResignFirstResponder
@@ -146,13 +152,14 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
     public func makeUIView(context: Context) -> UITextField {
         let textField = UITextField(frame: .zero)
         textField.borderStyle = .none
+        textField.textColor = textColor
         textField.placeholder = placeholder
         textField.keyboardType = keyboardType
         textField.isSecureTextEntry = isSecureTextEntry
         textField.returnKeyType = returnKeyType
         textField.autocapitalizationType = autocapitalizationType
         textField.delegate = context.coordinator
-        
+
         if let inputView = inputView {
             let view = createUIView(for: inputView, height: 256)
             textField.inputView = view
@@ -177,15 +184,8 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
     }
     
     public func updateUIView(_ uiView: UITextField, context: Context) {
-        if text != uiView.text {
-            if shouldBecomeFirstResponder || shouldResignFirstResponder {
-                uiView.text = cacheText
-                text = cacheText
-                cacheText = ""
-            } else {
-                uiView.text = text
-            }
-        }
+        uiView.textColor = textColor
+        uiView.text = text
         
         if shouldBecomeFirstResponder && !isFirstResponder {
             uiView.becomeFirstResponder()
@@ -198,15 +198,10 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
     
     public func becomeFirstResponder() {
         shouldBecomeFirstResponder = true
-        //currently the only way to trigger an update is changing the text.  This forces the update and enables the textfield to become first responder.  The other option is to use introspection.  This seems like the easier approach for now.  Will find a better solution
-        cacheText = text
-        text = ""
     }
     
     public func resignFirstResponder() {
         shouldResignFirstResponder = true
-        cacheText = text
-        text = ""
     }
     
     func onCommit(_ text: String) {
