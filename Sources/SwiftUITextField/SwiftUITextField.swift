@@ -110,6 +110,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
     public let keyboardType: UIKeyboardType
     public let returnKeyType: UIReturnKeyType
     public let autocapitalizationType: UITextAutocapitalizationType
+    public let autoCorrectionType: UITextAutocorrectionType
     public let isSecureTextEntry: Bool
 
     @Binding public var isFirstResponder: Bool
@@ -131,6 +132,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
                 keyboardType: UIKeyboardType = .default,
                 returnKeyType: UIReturnKeyType = .default,
                 autocapitalizationType: UITextAutocapitalizationType = .words,
+                autoCorrectionType: UITextAutocorrectionType = .default,
                 isSecureTextEntry: Bool = false,
                 isFirstResponder: Binding<Bool>,
                 shouldBecomeFirstResponder: Binding<Bool>,
@@ -150,6 +152,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
         self.keyboardType = keyboardType
         self.returnKeyType = returnKeyType
         self.autocapitalizationType = autocapitalizationType
+        self.autoCorrectionType = autoCorrectionType
         self.isSecureTextEntry = isSecureTextEntry
         self._isFirstResponder = isFirstResponder
         self._shouldBecomeFirstResponder = shouldBecomeFirstResponder
@@ -168,6 +171,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
         textField.isSecureTextEntry = isSecureTextEntry
         textField.returnKeyType = returnKeyType
         textField.autocapitalizationType = autocapitalizationType
+        textField.autocorrectionType = autoCorrectionType
         textField.delegate = context.coordinator
 
         if let inputView = inputView {
