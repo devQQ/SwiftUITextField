@@ -112,6 +112,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
     public let autocapitalizationType: UITextAutocapitalizationType
     public let autoCorrectionType: UITextAutocorrectionType
     public let isSecureTextEntry: Bool
+    public let isUserInteractionEnabled: Bool
 
     @Binding public var isFirstResponder: Bool
     @Binding public var shouldBecomeFirstResponder: Bool
@@ -139,7 +140,8 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
                 shouldResignFirstResponder: Binding<Bool>,
                 formatText: ((String) -> String)? = nil,
                 returnKeyAction: (() -> Void)? = nil,
-                shouldChangeCharacter: ((_ currentText: String?, _ replacementString: String) -> Bool)? = nil
+                shouldChangeCharacter: ((_ currentText: String?, _ replacementString: String) -> Bool)? = nil,
+                isUserInteractionEnabled: Bool = true
     ) {
         self.placeholder = placeholder
         self._text = text
@@ -160,6 +162,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
         self.formatText = formatText
         self.returnKeyAction = returnKeyAction
         self.shouldChangeCharacter = shouldChangeCharacter
+        self.isUserInteractionEnabled = isUserInteractionEnabled
     }
     
     public func makeUIView(context: Context) -> UITextField {
@@ -173,6 +176,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
         textField.autocapitalizationType = autocapitalizationType
         textField.autocorrectionType = autoCorrectionType
         textField.delegate = context.coordinator
+        textField.isUserInteractionEnabled = isUserInteractionEnabled
 
         if let inputView = inputView {
             let view = createUIView(for: inputView, height: 256)
