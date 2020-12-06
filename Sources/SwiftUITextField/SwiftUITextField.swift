@@ -102,6 +102,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
     public let placeholder: String
     @Binding public var text: String
     @Binding public var textColor: UIColor
+    @Binding public var font: UIFont
     public let characterLimit: Int
     public let onEditingChanged: (Bool) -> Void
     public let onCommit: () -> Void
@@ -113,7 +114,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
     public let autoCorrectionType: UITextAutocorrectionType
     public let isSecureTextEntry: Bool
     public let isUserInteractionEnabled: Bool
-
+    
     @Binding public var isFirstResponder: Bool
     @Binding public var shouldBecomeFirstResponder: Bool
     @Binding public var shouldResignFirstResponder: Bool
@@ -125,6 +126,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
     public init(_ placeholder: String,
                 text: Binding<String>,
                 textColor: Binding<UIColor>,
+                font: Binding<UIFont>,
                 characterLimit: Int,
                 onEditingChanged: @escaping (Bool) -> Void = { _ in },
                 onCommit: @escaping () -> Void = {},
@@ -146,6 +148,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
         self.placeholder = placeholder
         self._text = text
         self._textColor = textColor
+        self._font = font
         self.characterLimit = characterLimit
         self.onEditingChanged = onEditingChanged
         self.onCommit = onCommit
@@ -169,6 +172,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
         let textField = UITextField(frame: .zero)
         textField.borderStyle = .none
         textField.textColor = textColor
+        textField.font = font
         textField.placeholder = placeholder
         textField.keyboardType = keyboardType
         textField.isSecureTextEntry = isSecureTextEntry
@@ -177,7 +181,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
         textField.autocorrectionType = autoCorrectionType
         textField.delegate = context.coordinator
         textField.isUserInteractionEnabled = isUserInteractionEnabled
-
+        
         if let inputView = inputView {
             let view = createUIView(for: inputView, height: 256)
             textField.inputView = view
@@ -204,6 +208,7 @@ public struct SwiftUITextField<U: View, V: View>: UIViewRepresentable {
     public func updateUIView(_ uiView: UITextField, context: Context) {
         uiView.textColor = textColor
         uiView.text = text
+        uiView.font = font
         
         if shouldBecomeFirstResponder && !isFirstResponder {
             uiView.becomeFirstResponder()
